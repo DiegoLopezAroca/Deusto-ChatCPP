@@ -1,10 +1,23 @@
+// Initialise Winsock
+
 #include <iostream>
+#include <stdio.h>
+#include <winsock2.h>
 
-using namespace std;
+#pragma comment(lib,"ws2_32.lib") //Winsock Library
 
-int main() {
+int main(int argc , char *argv[])
+{
+	WSADATA wsa;
 
-    cout << "Este es el cliente" << endl;
-    
-    return 0;
+	printf("\nInitialising Winsock...");
+	if (WSAStartup(MAKEWORD(2,2),&wsa) != 0)
+	{
+		printf("Failed. Error Code : %d",WSAGetLastError());
+		return 1;
+	}
+
+	printf("Initialised.");
+
+	return 0;
 }
