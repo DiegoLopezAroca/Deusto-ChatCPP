@@ -4,7 +4,7 @@
 #define SERVER_IP "127.0.0.1"
 #define SERVER_PORT 6000
 
-int main(int argc, char *argv[]) {
+int iniciarSocketCliente(int argc, char *argv[]) {
 
 	WSADATA wsaData;
 	SOCKET s;
@@ -71,4 +71,12 @@ int main(int argc, char *argv[]) {
 	WSACleanup();
 
 	return 0;
+}
+
+
+int main(int argc, char *argv[]) {
+
+    iniciarSocketCliente(argc, argv);
+
+    return 0;
 }
