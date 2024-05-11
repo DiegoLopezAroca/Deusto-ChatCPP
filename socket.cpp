@@ -12,7 +12,7 @@ int iniciarSocketCliente(int argc, char *argv[]) {
 	struct sockaddr_in server;
 	char sendBuff[512], recvBuff[512];
 
-	printf("\nInitialising Winsock...\n");
+	/*printf("\nInitialising Winsock...\n");
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
 		printf("Failed. Error Code : %d", WSAGetLastError());
 		return -1;
@@ -27,7 +27,7 @@ int iniciarSocketCliente(int argc, char *argv[]) {
 		return -1;
 	}
 
-	printf("Socket created.\n");
+	printf("Socket created.\n");*/
 
 	server.sin_addr.s_addr = inet_addr(SERVER_IP);
 	server.sin_family = AF_INET;
@@ -73,3 +73,4 @@ int iniciarSocketCliente(int argc, char *argv[]) {
 
 	return 0;
 }
+
