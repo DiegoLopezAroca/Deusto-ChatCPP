@@ -1,19 +1,21 @@
 #include <stdio.h>
+#include <iostream>
 #include <winsock2.h>
 #include "socket.h"
 
 #define SERVER_IP "127.0.0.1"
 #define SERVER_PORT 6000
 
+using namespace std;
 
 SocketCliente::SocketCliente() {
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-        printf("Failed to initialize Winsock. Error Code: %d", WSAGetLastError());
+        cout << "Failed to initialize Winsock. Error Code: " << WSAGetLastError() << endl;
         exit(EXIT_FAILURE);
     }
 
     if ((s = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) {
-        printf("Could not create socket : %d", WSAGetLastError());
+        cout << "Could not create socket : " << WSAGetLastError() << endl;
         WSACleanup();
         exit(EXIT_FAILURE);
     }
@@ -23,7 +25,7 @@ SocketCliente::SocketCliente() {
     server.sin_port = htons(SERVER_PORT);
 
     if (connect(s, (struct sockaddr*) &server, sizeof(server)) == SOCKET_ERROR) {
-        printf("Connection error: %d", WSAGetLastError());
+        cout << "Connection error: " << WSAGetLastError() << endl;
         closesocket(s);
         WSACleanup();
         exit(EXIT_FAILURE);
@@ -36,9 +38,28 @@ SocketCliente::~SocketCliente() {
 }
 
 void SocketCliente::enviarMensaje(const char *mensaje) {
-    send(s, mensaje, strlen(mensaje), 0);
+    int bytesEnviados = send(s, mensaje, strlen(mensaje), 0);
+    if (bytesEnviados == SOCKET_ERROR) {
+        // Manejar el error si la función send falla
+        cout << "Error al enviar el mensaje: " << WSAGetLastError() << endl;
+    }
 }
 
 void SocketCliente::recibirMensaje(char *buffer) {
-    recv(s, buffer, MAX_BUFFER_SIZE, 0);
+    int bytesRecibidos = recv(s, buffer, MAX_BUFFER_SIZE - 1, 0); // -1 para dejar espacio para el carácter nulo
+    if (bytesRecibidos == SOCKET_ERROR) {
+        // Manejar el error si la función recv falla
+        cout << "Error al recibir el mensaje: " << WSAGetLastError() << endl;
+    } else {
+        // Agregar un carácter nulo al final del buffer para asegurar que sea una cadena válida
+        buffer[bytesRecibidos] = '\0';
+    }
+}
+
+bool SocketCliente::recibirRespuestaAutenticacion() {
+    bool autenticado = false; // Inicializar como falso en caso de error
+    char buffer[sizeof(bool)]; // Buffer para almacenar el resultado de la autenticación
+    recibirMensaje(buffer); // Recibir el resultado de la autenticación
+    memcpy(&autenticado, buffer, sizeof(bool)); // Copiar el resultado al booleano autenticado
+    return autenticado;
 }

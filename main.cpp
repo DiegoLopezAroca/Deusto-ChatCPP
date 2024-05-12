@@ -7,6 +7,7 @@ int main(int argc, char *argv[]) {
 
     Cliente cliente;
     cliente.iniciarSesion();
+    cliente.mainLoop();
 
     return 0;
 }

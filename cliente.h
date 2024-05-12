@@ -13,4 +13,7 @@ private:
 public:
     Cliente();
     void iniciarSesion();
+    void mainLoop();
+    int menuEstudiante();
+    int menuProfesorado();
 };
