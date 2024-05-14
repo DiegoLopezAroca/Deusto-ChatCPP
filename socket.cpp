@@ -55,11 +55,3 @@ void SocketCliente::recibirMensaje(char *buffer) {
         buffer[bytesRecibidos] = '\0';
     }
 }
-
-bool SocketCliente::recibirRespuestaAutenticacion() {
-    bool autenticado = false; // Inicializar como falso en caso de error
-    char buffer[sizeof(bool)]; // Buffer para almacenar el resultado de la autenticación
-    recibirMensaje(buffer); // Recibir el resultado de la autenticación
-    memcpy(&autenticado, buffer, sizeof(bool)); // Copiar el resultado al booleano autenticado
-    return autenticado;
-}
