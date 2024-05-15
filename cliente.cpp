@@ -54,13 +54,10 @@ void Cliente::mainLoop() {
                 case 1:
                     mensajeInstruccion = "SHOW_PROFILE";
                     socketCliente.enviarMensaje(mensajeInstruccion.c_str());
-
                     socketCliente.recibirMensaje(correo);
                     socketCliente.recibirMensaje(nombre);
                     socketCliente.recibirMensaje(dni);
-                    
                     pantallaPerfilProfesor(correo, nombre, dni);
-                    // Aquí debería continuar al menú principal después de mostrar el perfil
                     break;
                 case 2:
                     mensajeInstruccion = "NEW_GROUP";
@@ -96,6 +93,31 @@ void Cliente::mainLoop() {
             }
         } else if (strcmp(tipoUsuario, "Estudiante") == 0) {
             int opcionEstudiante = menuEstudiante();
+            switch (opcionEstudiante) {
+                case 1:
+                    //pantallaPerfilAlumno(db, correo, nombre, dni);
+                    break;
+                case 2:
+                    //Mostramos los profesores del estudiante
+                    //pantallaTusProfesores(db,correo);
+                    break;
+                case 3:
+                    //Mostramos los chats iniciados
+                    //pantallaChatIniciados(db, correo);
+                    break;
+                case 4:
+                    //Creamos un nuevo chat
+                    //pantallaIniciarNuevaConversacion(db, correo);
+                    break;
+                case 5:
+                    sigo = false;
+                    mensajeInstruccion = "EXIT";
+                    socketCliente.enviarMensaje(mensajeInstruccion.c_str());
+                    opcionSalir();
+                    break;
+                default:
+                    break;
+            }
             // Implementar lógica similar para estudiantes si es necesario
         } else {
             cout << "Tipo de usuario no reconocido." << endl;
@@ -122,7 +144,9 @@ int Cliente::menuProfesorado() {
 
 int Cliente::menuEstudiante() {
     system("cls");
-    cout << "***MENU ESTUDIANTE***\n";
+    cout << ("================================\n");
+    cout << ("        MENU ESTUDIANTE         \n");
+    cout << ("================================\n");
     cout << "1. Tu perfil.\n";
     cout << "2. Tus profesores.\n";
     cout << "3. Chat iniciados.\n";
@@ -215,15 +239,17 @@ void Cliente::pantallaIniciarNuevaConversacion() {
     cout << "================================\n";
 
     bool correoValido = false;
-    string volverMenu;
-    string correoPersonaDeseada;
+    char volverMenu[MAX_LINE];
+    char correoPersonaDeseada[MAX_BUFFER_SIZE];
     do {
         cout << "1. Para volver al menu pulse 1\n";
-        cout << "2. Para iniciar una conversacion pulse otra tecla\n\n";
+        cout << "2. Para iniciar una conversacion introduzca un caracter cualquiera\n\n";
         cout << "Eliga una opcion: ";
-        getline(cin, volverMenu);
+        cin >> volverMenu;
 
         if(volverMenu[0] == '1') {
+            mensajeInstruccion = "RETURN_MENU";
+            socketCliente.enviarMensaje(mensajeInstruccion.c_str());
             return;
         } else {
             system("cls");
@@ -231,17 +257,23 @@ void Cliente::pantallaIniciarNuevaConversacion() {
             cout << "  Iniciando Nueva Conversacion  \n";
             cout << "================================\n";
             cout << "Correo del destinatario (@opendeusto.es): ";
-            getline(cin, correoPersonaDeseada);
+            cin >> correoPersonaDeseada;
 
-            // Enviar solicitud al servidor
-            socketCliente.enviarMensaje("INICIAR_CONVERSACION");
-            socketCliente.enviarMensaje(correoPersonaDeseada.c_str());
+            // Enviamos el correo de la persona
+            mensajeInstruccion = correoPersonaDeseada;
+            socketCliente.enviarMensaje(mensajeInstruccion.c_str());
 
+            // Recibimos una respuesta
             char buffer[MAX_BUFFER_SIZE];
             socketCliente.recibirMensaje(buffer);
 
-            if (strcmp(buffer, "ERROR") == 0) {
-                cout << "\nEl usuario no existe o ya has iniciado una conversación con él.\n";
+            if (strcmp(buffer, "SAME_USER_ERROR") == 0) {
+                cout << "\nNo puedes iniciar una conversacion consigo mismo.\n\n";
+
+            } else if (strcmp(buffer, "CHAT_EXIST_ERROR") == 0) {
+                cout << "\nYa has iniciado una conversacion con este usuario.\n\n";
+            } else if (strcmp(buffer, "USER_NOT_FOUND_ERROR") == 0) {
+                cout << "\nEl usuario no existe.\n\n";
             } else {
                 cout << "\nSe ha iniciado la conversacion con el usuario " << correoPersonaDeseada << "\n\n";
             }
