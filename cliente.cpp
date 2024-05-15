@@ -41,16 +41,13 @@ void Cliente::mainLoop() {
         cout << "El usuario introducido no existe o la contrasenya es invalida\n";
     }
 
+    char tipoUsuario[MAX_BUFFER_SIZE];
+    socketCliente.recibirMensaje(tipoUsuario);
     while (sigo) {
-        // Continuar con la sesión
-        
-        char tipoUsuario[MAX_BUFFER_SIZE];
         char correo[MAX_BUFFER_SIZE];
         char nombre[MAX_BUFFER_SIZE];
         char dni[MAX_BUFFER_SIZE];
-        socketCliente.recibirMensaje(tipoUsuario);
-
-        // // Continuar con la sesión según el tipo de usuario
+        // Continuar con la sesión según el tipo de usuario
         if (strcmp(tipoUsuario, "Profesor") == 0) {
             int opcionProfesor = menuProfesorado();
             switch (opcionProfesor) {
@@ -63,30 +60,29 @@ void Cliente::mainLoop() {
                     socketCliente.recibirMensaje(dni);
                     
                     pantallaPerfilProfesor(correo, nombre, dni);
-                    
+                    // Aquí debería continuar al menú principal después de mostrar el perfil
                     break;
                 case 2:
                     mensajeInstruccion = "NEW_GROUP";
                     socketCliente.enviarMensaje(mensajeInstruccion.c_str());
-                    // pantallaCrearNuevoGrupo();
+                    pantallaCrearNuevoGrupo();
                     break;
                 case 3:
                     mensajeInstruccion = "STARTED_CHATS";
                     socketCliente.enviarMensaje(mensajeInstruccion.c_str());
-                    // pantallaChatIniciados(db, correo);
-
-                    
                     pantallaChatIniciados();
                     break;
                 case 4:
                     mensajeInstruccion = "NEW_CHAT";
                     socketCliente.enviarMensaje(mensajeInstruccion.c_str());
-                    // pantallaIniciarNuevaConversacion(db, correo);
+                    pantallaIniciarNuevaConversacion();
                     break;
                 case 5:
                     mensajeInstruccion = "MODIFY_USER";
                     socketCliente.enviarMensaje(mensajeInstruccion.c_str());
-                    // modificarUsuario(db, correo, contrasenya);
+                    char nuevoCorreo[MAX_BUFFER_SIZE];
+                    char nuevaContrasenya[MAX_BUFFER_SIZE];
+                    solicitarCorreoYContrasenya(nuevoCorreo, nuevaContrasenya);
                     break;
                 case 6:
                     sigo = false;
@@ -95,27 +91,31 @@ void Cliente::mainLoop() {
                     opcionSalir();
                     break;
                 default:
-                    cout << "Opción no válida. Por favor, intenta de nuevo." << std::endl;
+                    cout << "Opcion no valida. Por favor, intenta de nuevo." << endl;
                     break;
             }
         } else if (strcmp(tipoUsuario, "Estudiante") == 0) {
             int opcionEstudiante = menuEstudiante();
+            // Implementar lógica similar para estudiantes si es necesario
         } else {
             cout << "Tipo de usuario no reconocido." << endl;
+            sigo = false;
         }
     }
 }
 
+
 int Cliente::menuProfesorado() {
     system("cls");
-    cout << "***MENU PROFESORADO***\n";
+    cout << ("===============================\n");
+    cout << ("       MENU PROFESORADO        \n");
+    cout << ("===============================\n");
     cout << "1. Tu perfil.\n";
-    cout << "2. Tus grupos/asignaturas.\n";
-    cout << "3. Crear nuevo grupo.\n";
-    cout << "4. Chat iniciados.\n";
-    cout << "5. Iniciar nueva conversacion.\n";
-    cout << "6. Modificar tu perfil.\n";
-    cout << "7. SALIR\n\n";
+    cout << "2. Crear nuevo grupo.\n";
+    cout << "3. Chat iniciados.\n";
+    cout << "4. Iniciar nueva conversacion.\n";
+    cout << "5. Modificar tu perfil.\n";
+    cout << "6. SALIR\n\n";
     cout << "Elija una opcion:  ";
     return recogerEntero();
 }
@@ -136,7 +136,7 @@ int Cliente::menuEstudiante() {
 void Cliente::clearIfNeeded(char *str, int max_line) {
     // Limpia los caracteres de más introducidos
     if ((strlen(str) == max_line-1) && (str[max_line-2] != '\n')) {
-        while (cin.get() != '\n');
+        while (getchar() != '\n');
     }
 }
 
@@ -154,14 +154,13 @@ int Cliente::recogerEntero() {
 void Cliente::pantallaChatIniciados() {
     char buffer[MAX_BUFFER_SIZE * 10]; // Buffer grande para todas las conversaciones
     socketCliente.recibirMensaje(buffer);
-
     system("cls");
     cout << "================================\n";
     cout << "    Conversaciones iniciadas    \n";
     cout << "================================\n";
     cout << buffer;
     cout << "================================\n";
-    cout << "Pulse una tecla para volver al menu: ";
+    cout << "Introduce un caracter cualquiera para volver al menu: ";
     int entero;
     cin >> entero;
     if(entero == 1) {
@@ -295,7 +294,7 @@ void Cliente::pantallaCrearNuevoGrupo() {
     getchar();
 }
 
-void Cliente::pantallaPerfilProfesor(char *correo, char* nombre, char *dni) {
+char Cliente::pantallaPerfilProfesor(char *correo, char* nombre, char *dni) {
     system("cls");
     printf("================================\n");
     printf("             -Perfil-           \n");
@@ -306,7 +305,9 @@ void Cliente::pantallaPerfilProfesor(char *correo, char* nombre, char *dni) {
     printf("================================\n");
     printf("Pulse 1 para volver al menu.\n\n");
     int entero = recogerEntero();
-    if (entero == 1) {
-        mainLoop();  // Volver al menú principal
+    while (entero != 1) {
+        cout << "Opcion no valida. Por favor, pulse 1 para volver al menu.\n";
+        entero = recogerEntero();
     }
+    return 0;
 }

@@ -30,5 +30,5 @@ public:
     void ingresarCorreo(char* correo);
     void ingresarContrasenya(char* contrasenya);
     void pantallaCrearNuevoGrupo();
-    void pantallaPerfilProfesor(char *correo, char* nombre, char *dni);
+    char pantallaPerfilProfesor(char *correo, char* nombre, char *dni);
 };

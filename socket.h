@@ -7,7 +7,7 @@
 
 #define SERVER_IP "127.0.0.1"
 #define SERVER_PORT 6000
-#define MAX_BUFFER_SIZE 1024
+#define MAX_BUFFER_SIZE 1024*10
 
 class SocketCliente {
 private:
