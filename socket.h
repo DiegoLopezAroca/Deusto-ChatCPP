@@ -22,4 +22,5 @@ public:
     void enviarMensaje(const char *mensaje);
     void recibirMensaje(char *buffer);
     bool recibirRespuestaAutenticacion();
+    void enviarDatos(const char *datos, int tamano);
 };

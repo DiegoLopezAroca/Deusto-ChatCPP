@@ -175,6 +175,50 @@ int Cliente::recogerEntero() {
     return atoi(linea); // Utilizamos atoi para convertir la entrada a un entero
 }
 
+
+
+
+
+
+
+void Cliente::pantallaChatConversacion(int idConversacion) {
+    char buffer[MAX_BUFFER_SIZE * 10]; // Buffer grande para todos los mensajes
+    string mensajeInstruccion = "CHAT_CONVERSATION";
+    socketCliente.enviarMensaje(mensajeInstruccion.c_str());
+
+    // Enviar id de la conversación
+    socketCliente.enviarDatos((char*)&idConversacion, sizeof(int));
+
+    while (true) {
+        system("cls");
+        cout << "================================\n";
+        cout << "       Conversacion " << idConversacion << "        \n";
+        cout << "================================\n";
+
+        // Solicitar mensajes de la conversación
+        mensajeInstruccion = "GET_MESSAGES";
+        socketCliente.enviarMensaje(mensajeInstruccion.c_str());
+
+        // Recibir mensajes
+        socketCliente.recibirMensaje(buffer);
+        cout << buffer;
+        cout << "================================\n";
+        cout << "Escriba un mensaje o 'salir' para volver al menu: ";
+        string mensaje;
+        getline(cin, mensaje);
+
+        if (mensaje == "salir") {
+            mensajeInstruccion = "RETURN_MENU";
+            socketCliente.enviarMensaje(mensajeInstruccion.c_str());
+            break;
+        } else {
+            // Enviar mensaje al servidor
+            socketCliente.enviarMensaje(mensaje.c_str());
+        }
+    }
+}
+
+// Modificar pantallaChatIniciados para seleccionar una conversación
 void Cliente::pantallaChatIniciados() {
     char buffer[MAX_BUFFER_SIZE * 10]; // Buffer grande para todas las conversaciones
     socketCliente.recibirMensaje(buffer);
@@ -184,13 +228,37 @@ void Cliente::pantallaChatIniciados() {
     cout << "================================\n";
     cout << buffer;
     cout << "================================\n";
-    cout << "Introduce un caracter cualquiera para volver al menu: ";
-    int entero;
-    cin >> entero;
-    if(entero == 1) {
+    cout << "Seleccione una conversacion o pulse 0 para volver al menu: ";
+    int opcion;
+    cin >> opcion;
+    if (opcion == 0) {
         return;
+    } else {
+        pantallaChatConversacion(opcion);
     }
 }
+
+
+
+
+
+
+// void Cliente::pantallaChatIniciados() {
+//     char buffer[MAX_BUFFER_SIZE * 10]; // Buffer grande para todas las conversaciones
+//     socketCliente.recibirMensaje(buffer);
+//     system("cls");
+//     cout << "================================\n";
+//     cout << "    Conversaciones iniciadas    \n";
+//     cout << "================================\n";
+//     cout << buffer;
+//     cout << "================================\n";
+//     cout << "Introduce un caracter cualquiera para volver al menu: ";
+//     int entero;
+//     cin >> entero;
+//     if(entero == 1) {
+//         return;
+//     }
+// }
 
 void Cliente::pantallaTusGruposAsignaturas() {
     socketCliente.enviarMensaje("GET_GRUPOS_ASIGNATURAS");
@@ -269,13 +337,13 @@ void Cliente::pantallaIniciarNuevaConversacion() {
 
             if (strcmp(buffer, "SAME_USER_ERROR") == 0) {
                 cout << "\nNo puedes iniciar una conversacion consigo mismo.\n\n";
-
             } else if (strcmp(buffer, "CHAT_EXIST_ERROR") == 0) {
                 cout << "\nYa has iniciado una conversacion con este usuario.\n\n";
             } else if (strcmp(buffer, "USER_NOT_FOUND_ERROR") == 0) {
                 cout << "\nEl usuario no existe.\n\n";
             } else {
                 cout << "\nSe ha iniciado la conversacion con el usuario " << correoPersonaDeseada << "\n\n";
+                correoValido = true;
             }
         }
 

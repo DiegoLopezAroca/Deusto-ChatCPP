@@ -55,3 +55,10 @@ void SocketCliente::recibirMensaje(char *buffer) {
         buffer[bytesRecibidos] = '\0';
     }
 }
+
+void SocketCliente::enviarDatos(const char *datos, int tamano) {
+    int bytesEnviados = send(s, datos, tamano, 0);
+    if (bytesEnviados == SOCKET_ERROR) {
+        cout << "Error al enviar los datos: " << WSAGetLastError() << endl;
+    }
+}

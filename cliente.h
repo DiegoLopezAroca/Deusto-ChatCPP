@@ -31,4 +31,5 @@ public:
     void ingresarContrasenya(char* contrasenya);
     void pantallaCrearNuevoGrupo();
     char pantallaPerfilProfesor(char *correo, char* nombre, char *dni);
+    void pantallaChatConversacion(int idConversacion);
 };
