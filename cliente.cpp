@@ -36,7 +36,7 @@ void Cliente::mainLoop() {
 
     if(strcmp(esValido, "TRUE") == 0) {
         sigo = true;
-    } else {
+    } else if(strcmp(esValido, "FALSE") == 0) {
         sigo = false;
         cout << "El usuario introducido no existe o la contrasenya es invalida\n";
     }
@@ -57,37 +57,38 @@ void Cliente::mainLoop() {
                 case 1:
                     mensajeInstruccion = "SHOW_PROFILE";
                     socketCliente.enviarMensaje(mensajeInstruccion.c_str());
+
                     socketCliente.recibirMensaje(correo);
                     socketCliente.recibirMensaje(nombre);
                     socketCliente.recibirMensaje(dni);
+                    
                     pantallaPerfilProfesor(correo, nombre, dni);
+                    
                     break;
                 case 2:
-                    mensajeInstruccion = "SHOW_GROUPS";
-                    socketCliente.enviarMensaje(mensajeInstruccion.c_str());
-                    // pantallaTusGruposAsignaturas(db, correo);
-                    break;
-                case 3:
                     mensajeInstruccion = "NEW_GROUP";
                     socketCliente.enviarMensaje(mensajeInstruccion.c_str());
                     // pantallaCrearNuevoGrupo();
                     break;
-                case 4:
+                case 3:
                     mensajeInstruccion = "STARTED_CHATS";
                     socketCliente.enviarMensaje(mensajeInstruccion.c_str());
                     // pantallaChatIniciados(db, correo);
+
+                    
+                    pantallaChatIniciados();
                     break;
-                case 5:
+                case 4:
                     mensajeInstruccion = "NEW_CHAT";
                     socketCliente.enviarMensaje(mensajeInstruccion.c_str());
                     // pantallaIniciarNuevaConversacion(db, correo);
                     break;
-                case 6:
+                case 5:
                     mensajeInstruccion = "MODIFY_USER";
                     socketCliente.enviarMensaje(mensajeInstruccion.c_str());
                     // modificarUsuario(db, correo, contrasenya);
                     break;
-                case 7:
+                case 6:
                     sigo = false;
                     mensajeInstruccion = "EXIT";
                     socketCliente.enviarMensaje(mensajeInstruccion.c_str());
@@ -151,8 +152,7 @@ int Cliente::recogerEntero() {
 }
 
 void Cliente::pantallaChatIniciados() {
-    socketCliente.enviarMensaje("GET_CHAT_INICIADOS");
-    char buffer[MAX_BUFFER_SIZE];
+    char buffer[MAX_BUFFER_SIZE * 10]; // Buffer grande para todas las conversaciones
     socketCliente.recibirMensaje(buffer);
 
     system("cls");
@@ -296,12 +296,17 @@ void Cliente::pantallaCrearNuevoGrupo() {
 }
 
 void Cliente::pantallaPerfilProfesor(char *correo, char* nombre, char *dni) {
+    system("cls");
     printf("================================\n");
     printf("             -Perfil-           \n");
     printf("================================\n");
-    printf("Correo electronico: %s\n");
-    printf("Nombre: %s\n");
-    printf("DNI de %s: %s\n");
+    printf("Correo electronico: %s\n", correo);
+    printf("Nombre: %s\n", nombre);
+    printf("DNI: %s\n", dni);
     printf("================================\n");
-    printf("Pulse una tecla para volver al menu.\n\n");
+    printf("Pulse 1 para volver al menu.\n\n");
+    int entero = recogerEntero();
+    if (entero == 1) {
+        mainLoop();  // Volver al menú principal
+    }
 }
