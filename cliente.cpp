@@ -19,11 +19,11 @@ void Cliente::iniciarSesion() {
     // Enviar correo y contraseña al servidor para iniciar sesión
     cout << "Correo electronico (@opendeusto.es): ";
     cin >> correo;
-    socketCliente.enviarMensaje(correo.c_str());
+    socketCliente.enviarMensaje(correo);
 
     cout << "Contrasenya: ";
     cin >> contrasenya;
-    socketCliente.enviarMensaje(contrasenya.c_str());
+    socketCliente.enviarMensaje(contrasenya);
 }
 
 
@@ -44,7 +44,6 @@ void Cliente::mainLoop() {
     char tipoUsuario[MAX_BUFFER_SIZE];
     socketCliente.recibirMensaje(tipoUsuario);
     while (sigo) {
-        char correo[MAX_BUFFER_SIZE];
         char nombre[MAX_BUFFER_SIZE];
         char dni[MAX_BUFFER_SIZE];
         // Continuar con la sesión según el tipo de usuario
@@ -77,9 +76,7 @@ void Cliente::mainLoop() {
                 case 5:
                     mensajeInstruccion = "MODIFY_USER";
                     socketCliente.enviarMensaje(mensajeInstruccion.c_str());
-                    char nuevoCorreo[MAX_BUFFER_SIZE];
-                    char nuevaContrasenya[MAX_BUFFER_SIZE];
-                    solicitarCorreoYContrasenya(nuevoCorreo, nuevaContrasenya);
+                    solicitarCorreoYContrasenya(correo, contrasenya);  // Usar correo y contrasenya almacenados
                     break;
                 case 6:
                     sigo = false;
@@ -172,6 +169,7 @@ int Cliente::recogerEntero() {
     cin >> linea; // Leer una línea de entrada
     while(!strlen(linea)) cin >> linea;
     clearIfNeeded(linea, MAX_LINE); // Limpiar si es necesario
+    system("cls");
     return atoi(linea); // Utilizamos atoi para convertir la entrada a un entero
 }
 
@@ -318,6 +316,7 @@ void Cliente::pantallaIniciarNuevaConversacion() {
         if(volverMenu[0] == '1') {
             mensajeInstruccion = "RETURN_MENU";
             socketCliente.enviarMensaje(mensajeInstruccion.c_str());
+            correoValido = true;
             return;
         } else {
             system("cls");
@@ -336,29 +335,74 @@ void Cliente::pantallaIniciarNuevaConversacion() {
             socketCliente.recibirMensaje(buffer);
 
             if (strcmp(buffer, "SAME_USER_ERROR") == 0) {
-                cout << "\nNo puedes iniciar una conversacion consigo mismo.\n\n";
+                cout << "\nNo puedes iniciar una conversacion contigo mismo.\n\n";
             } else if (strcmp(buffer, "CHAT_EXIST_ERROR") == 0) {
                 cout << "\nYa has iniciado una conversacion con este usuario.\n\n";
             } else if (strcmp(buffer, "USER_NOT_FOUND_ERROR") == 0) {
                 cout << "\nEl usuario no existe.\n\n";
-            } else {
+            } else if (strcmp(buffer, "OK") == 0) {
                 cout << "\nSe ha iniciado la conversacion con el usuario " << correoPersonaDeseada << "\n\n";
-                correoValido = true;
+            } else {
+                cout << "\nError desconocido.\n";
             }
         }
 
     } while (!correoValido);
 }
 
+
 // Modifica el usuario
-void Cliente::solicitarCorreoYContrasenya(char* correoNuevo, char* contrasenyaNueva) {
+void Cliente::solicitarCorreoYContrasenya(char* correo, char* contrasenya) {
     system("cls");
     cout << "================================\n";
     cout << " Modificar tus datos personales \n";
     cout << "================================\n";
-    cout << "\nIntroduzca sus nuevos datos:\n";
-    ingresarCorreo(correoNuevo);
-    ingresarContrasenya(contrasenyaNueva);
+    
+    bool datosValidos = false;
+    char volverMenu[MAX_BUFFER_SIZE];
+    char nuevoCorreo[MAX_BUFFER_SIZE];
+    char nuevaContrasenya[MAX_BUFFER_SIZE];
+
+    do {
+        cout << "1. Para volver al menu pulse 1\n";
+        cout << "2. Para introducir nuevos datos pulse otra tecla\n\n";
+        cout << "Eliga una opcion: ";
+        cin >> volverMenu;
+
+        if (volverMenu[0] == '1') {
+            mensajeInstruccion = "RETURN_MENU";
+            socketCliente.enviarMensaje(mensajeInstruccion.c_str());
+            datosValidos = true;
+            break;
+        } else {
+            system("cls");
+            cout << "================================\n";
+            cout << " Modificar tus datos personales \n";
+            cout << "================================\n";
+            ingresarCorreo(nuevoCorreo);
+            ingresarContrasenya(nuevaContrasenya);
+
+            // Enviar los datos al servidor
+            socketCliente.enviarMensaje(nuevoCorreo);
+            socketCliente.enviarMensaje(nuevaContrasenya);
+
+            // Recibimos una respuesta
+            char buffer[MAX_BUFFER_SIZE];
+            socketCliente.recibirMensaje(buffer);
+
+            if (strcmp(buffer, "USER_EXISTS") == 0) {
+                cout << "\nEl correo nuevo ya esta en uso. Intentelo de nuevo.\n\n";
+            } else if (strcmp(buffer, "MODIFY_SUCCESS") == 0) {
+                cout << "\nUsuario modificado con exito.\n\n";
+                // Actualizar el correo y la contraseña del cliente después de la modificación exitosa
+                strcpy(correo, nuevoCorreo);
+                strcpy(contrasenya, nuevaContrasenya);
+            } else {
+                cout << "\nError al modificar el usuario.\n\n";
+            }
+        }
+
+    } while (!datosValidos);
 }
 
 void Cliente::opcionSalir() {

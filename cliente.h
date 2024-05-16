@@ -9,8 +9,8 @@
 class Cliente {
 private:
     std::string mensajeInstruccion;
-    std::string correo;
-    std::string contrasenya;
+    char correo[MAX_BUFFER_SIZE];
+    char contrasenya[MAX_BUFFER_SIZE];
     SocketCliente socketCliente;
 
 public:
@@ -25,7 +25,7 @@ public:
     void pantallaTusGruposAsignaturas();
     void pantallaTusProfesores();
     void pantallaIniciarNuevaConversacion();
-    void solicitarCorreoYContrasenya(char* correoNuevo, char* contrasenyaNueva);
+    void solicitarCorreoYContrasenya(char* correo, char* contrasenya);
     void opcionSalir();
     void ingresarCorreo(char* correo);
     void ingresarContrasenya(char* contrasenya);
