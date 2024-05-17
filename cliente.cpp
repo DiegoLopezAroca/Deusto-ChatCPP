@@ -59,26 +59,21 @@ void Cliente::mainLoop() {
                     pantallaPerfilProfesor(correo, nombre, dni);
                     break;
                 case 2:
-                    mensajeInstruccion = "NEW_GROUP";
-                    socketCliente.enviarMensaje(mensajeInstruccion.c_str());
-                    pantallaCrearNuevoGrupo();
-                    break;
-                case 3:
                     mensajeInstruccion = "STARTED_CHATS";
                     socketCliente.enviarMensaje(mensajeInstruccion.c_str());
                     pantallaChatIniciados();
                     break;
-                case 4:
+                case 3:
                     mensajeInstruccion = "NEW_CHAT";
                     socketCliente.enviarMensaje(mensajeInstruccion.c_str());
                     pantallaIniciarNuevaConversacion();
                     break;
-                case 5:
+                case 4:
                     mensajeInstruccion = "MODIFY_USER";
                     socketCliente.enviarMensaje(mensajeInstruccion.c_str());
                     solicitarCorreoYContrasenya(correo, contrasenya);  // Usar correo y contrasenya almacenados
                     break;
-                case 6:
+                case 5:
                     sigo = false;
                     mensajeInstruccion = "EXIT";
                     socketCliente.enviarMensaje(mensajeInstruccion.c_str());
@@ -130,11 +125,10 @@ int Cliente::menuProfesorado() {
     cout << ("       MENU PROFESORADO        \n");
     cout << ("===============================\n");
     cout << "1. Tu perfil.\n";
-    cout << "2. Crear nuevo grupo.\n";
-    cout << "3. Chat iniciados.\n";
-    cout << "4. Iniciar nueva conversacion.\n";
-    cout << "5. Modificar tu perfil.\n";
-    cout << "6. SALIR\n\n";
+    cout << "2. Chat iniciados.\n";
+    cout << "3. Iniciar nueva conversacion.\n";
+    cout << "4. Modificar tu perfil.\n";
+    cout << "5. SALIR\n\n";
     cout << "Elija una opcion:  ";
     return recogerEntero();
 }
@@ -178,51 +172,12 @@ int Cliente::recogerEntero() {
 
 
 
-
-void Cliente::pantallaChatConversacion(int idConversacion) {
-    char buffer[MAX_BUFFER_SIZE * 10]; // Buffer grande para todos los mensajes
-    string mensajeInstruccion = "CHAT_CONVERSATION";
-    socketCliente.enviarMensaje(mensajeInstruccion.c_str());
-
-    // Enviar id de la conversación
-    socketCliente.enviarDatos((char*)&idConversacion, sizeof(int));
-
-    while (true) {
-        system("cls");
-        cout << "================================\n";
-        cout << "       Conversacion " << idConversacion << "        \n";
-        cout << "================================\n";
-
-        // Solicitar mensajes de la conversación
-        mensajeInstruccion = "GET_MESSAGES";
-        socketCliente.enviarMensaje(mensajeInstruccion.c_str());
-
-        // Recibir mensajes
-        socketCliente.recibirMensaje(buffer);
-        cout << buffer;
-        cout << "================================\n";
-        cout << "Escriba un mensaje o 'salir' para volver al menu: ";
-        string mensaje;
-        getline(cin, mensaje);
-
-        if (mensaje == "salir") {
-            mensajeInstruccion = "RETURN_MENU";
-            socketCliente.enviarMensaje(mensajeInstruccion.c_str());
-            break;
-        } else {
-            // Enviar mensaje al servidor
-            socketCliente.enviarMensaje(mensaje.c_str());
-        }
-    }
-}
-
-// Modificar pantallaChatIniciados para seleccionar una conversación
 void Cliente::pantallaChatIniciados() {
     char buffer[MAX_BUFFER_SIZE * 10]; // Buffer grande para todas las conversaciones
     socketCliente.recibirMensaje(buffer);
     system("cls");
     cout << "================================\n";
-    cout << "    Conversaciones iniciadas    \n";
+    cout << "      Conversaciones iniciadas  \n";
     cout << "================================\n";
     cout << buffer;
     cout << "================================\n";
@@ -230,53 +185,52 @@ void Cliente::pantallaChatIniciados() {
     int opcion;
     cin >> opcion;
     if (opcion == 0) {
+        mensajeInstruccion = "RETURN_MENU";
+        socketCliente.enviarMensaje(mensajeInstruccion.c_str());
         return;
     } else {
         pantallaChatConversacion(opcion);
     }
 }
 
+void Cliente::pantallaChatConversacion(int idConversacion) {
+    char buffer[MAX_BUFFER_SIZE * 10];  // Buffer grande para todos los mensajes
+    char idBuffer[32]; // Buffer suficiente para convertir un int a string
+    sprintf(idBuffer, "%d", idConversacion);
+    
+    while (true) {
+        system("cls");
+        cout << "================================\n";
+        cout << "       Conversacion " << idConversacion << "        \n";
+        cout << "================================\n";
 
+        // Solicitar y mostrar mensajes de la conversación
+        mensajeInstruccion = "GET_MESSAGES";
+        socketCliente.enviarMensaje(mensajeInstruccion.c_str());
+        socketCliente.enviarMensaje(idBuffer);
+        socketCliente.recibirMensaje(buffer);
+        cout << buffer;
 
+        cout << "================================\n";
+        cout << "Escriba un mensaje o 'salir' para volver al menu: ";
+        char mensaje[MAX_BUFFER_SIZE];
+        cin.ignore();  // Limpiar el buffer de entrada
+        cin.getline(mensaje, MAX_BUFFER_SIZE);
 
-
-
-// void Cliente::pantallaChatIniciados() {
-//     char buffer[MAX_BUFFER_SIZE * 10]; // Buffer grande para todas las conversaciones
-//     socketCliente.recibirMensaje(buffer);
-//     system("cls");
-//     cout << "================================\n";
-//     cout << "    Conversaciones iniciadas    \n";
-//     cout << "================================\n";
-//     cout << buffer;
-//     cout << "================================\n";
-//     cout << "Introduce un caracter cualquiera para volver al menu: ";
-//     int entero;
-//     cin >> entero;
-//     if(entero == 1) {
-//         return;
-//     }
-// }
-
-void Cliente::pantallaTusGruposAsignaturas() {
-    socketCliente.enviarMensaje("GET_GRUPOS_ASIGNATURAS");
-    char buffer[MAX_BUFFER_SIZE];
-    socketCliente.recibirMensaje(buffer);
-
-    system("cls");
-    cout << "================================\n";
-    cout << "    Tus grupos y asignaturas    \n";
-    cout << "    (Todavia por programar)     \n";
-    cout << "================================\n";
-    cout << buffer;
-    cout << "================================\n";
-    cout << "Pulse una tecla para volver al menu: ";
-    int entero;
-    cin >> entero;
-    if(entero == 1) {
-        return;
+        if (strcmp(mensaje, "salir") == 0) {
+            mensajeInstruccion = "RETURN_MENU";
+            socketCliente.enviarMensaje(mensajeInstruccion.c_str());
+            break;
+        } else {
+            mensajeInstruccion = "SEND_MESSAGE";
+            socketCliente.enviarMensaje(mensajeInstruccion.c_str());
+            socketCliente.enviarDatos((char*)&idConversacion, sizeof(int));
+            socketCliente.enviarMensaje(mensaje);
+        }
     }
 }
+
+
 
 void Cliente::pantallaTusProfesores() {
     socketCliente.enviarMensaje("GET_PROFESORES");
@@ -418,24 +372,6 @@ void Cliente::ingresarCorreo(char* correo) {
 void Cliente::ingresarContrasenya(char* contrasenya) {
     cout << "Contrasenya: ";
     cin >> contrasenya;
-}
-
-void Cliente::pantallaCrearNuevoGrupo() {
-    system("cls");
-    cout << "================================\n";
-    cout << "    Crear Nuevo Grupo     \n";
-    cout << "================================\n";
-
-    cout << "Nombre del nuevo grupo: ";
-    string nombreGrupo;
-    getline(cin, nombreGrupo);
-
-    socketCliente.enviarMensaje("CREAR_GRUPO");
-    socketCliente.enviarMensaje(nombreGrupo.c_str());
-
-    cout << "\nEl grupo " << nombreGrupo << " ha sido creado!\n";
-    cout << "\nPulse una tecla para volver al menu: ";
-    getchar();
 }
 
 char Cliente::pantallaPerfilProfesor(char *correo, char* nombre, char *dni) {
