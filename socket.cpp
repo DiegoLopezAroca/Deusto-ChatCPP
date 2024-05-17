@@ -46,13 +46,14 @@ void SocketCliente::enviarMensaje(const char *mensaje) {
 }
 
 void SocketCliente::recibirMensaje(char *buffer) {
-    int bytesRecibidos = recv(s, buffer, MAX_BUFFER_SIZE - 1, 0); // -1 para dejar espacio para el carácter nulo
+    memset(buffer, 0, MAX_BUFFER_SIZE);  // Asegurar que el buffer esté limpio antes de recibir
+    int bytesRecibidos = recv(s, buffer, MAX_BUFFER_SIZE - 1, 0);
     if (bytesRecibidos == SOCKET_ERROR) {
-        // Manejar el error si la función recv falla
         cout << "Error al recibir el mensaje: " << WSAGetLastError() << endl;
+    } else if (bytesRecibidos == 0) {
+        cout << "Conexión cerrada por el servidor." << endl;
     } else {
-        // Agregar un carácter nulo al final del buffer para asegurar que sea una cadena válida
-        buffer[bytesRecibidos] = '\0';
+        buffer[bytesRecibidos] = '\0';  // Asegurar terminación nula
     }
 }
 

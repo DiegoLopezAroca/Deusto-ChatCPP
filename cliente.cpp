@@ -56,7 +56,7 @@ void Cliente::mainLoop() {
                     socketCliente.recibirMensaje(correo);
                     socketCliente.recibirMensaje(nombre);
                     socketCliente.recibirMensaje(dni);
-                    pantallaPerfilProfesor(correo, nombre, dni);
+                    pantallaPerfil(correo, nombre, dni);
                     break;
                 case 2:
                     mensajeInstruccion = "STARTED_CHATS";
@@ -87,21 +87,34 @@ void Cliente::mainLoop() {
             int opcionEstudiante = menuEstudiante();
             switch (opcionEstudiante) {
                 case 1:
-                    //pantallaPerfilAlumno(db, correo, nombre, dni);
+                    mensajeInstruccion = "SHOW_PROFILE";
+                    socketCliente.enviarMensaje(mensajeInstruccion.c_str());
+                    socketCliente.recibirMensaje(correo);
+                    socketCliente.recibirMensaje(nombre);
+                    socketCliente.recibirMensaje(dni);
+                    pantallaPerfil(correo, nombre, dni);
                     break;
                 case 2:
-                    //Mostramos los profesores del estudiante
-                    //pantallaTusProfesores(db,correo);
+                    mensajeInstruccion = "GET_PROFESORES";
+                    socketCliente.enviarMensaje(mensajeInstruccion.c_str());
+                    pantallaTusProfesores();
                     break;
                 case 3:
-                    //Mostramos los chats iniciados
-                    //pantallaChatIniciados(db, correo);
+                    mensajeInstruccion = "STARTED_CHATS";
+                    socketCliente.enviarMensaje(mensajeInstruccion.c_str());
+                    pantallaChatIniciados();
                     break;
                 case 4:
-                    //Creamos un nuevo chat
-                    //pantallaIniciarNuevaConversacion(db, correo);
+                    mensajeInstruccion = "NEW_CHAT";
+                    socketCliente.enviarMensaje(mensajeInstruccion.c_str());
+                    pantallaIniciarNuevaConversacion();
                     break;
                 case 5:
+                    mensajeInstruccion = "MODIFY_USER";
+                    socketCliente.enviarMensaje(mensajeInstruccion.c_str());
+                    solicitarCorreoYContrasenya(correo, contrasenya);  // Usar correo y contrasenya almacenados
+                    break;
+                case 6:
                     sigo = false;
                     mensajeInstruccion = "EXIT";
                     socketCliente.enviarMensaje(mensajeInstruccion.c_str());
@@ -110,7 +123,6 @@ void Cliente::mainLoop() {
                 default:
                     break;
             }
-            // Implementar lógica similar para estudiantes si es necesario
         } else {
             cout << "Tipo de usuario no reconocido." << endl;
             sigo = false;
@@ -142,7 +154,8 @@ int Cliente::menuEstudiante() {
     cout << "2. Tus profesores.\n";
     cout << "3. Chat iniciados.\n";
     cout << "4. Iniciar nueva conversacion.\n";
-    cout << "5. SALIR\n\n";
+    cout << "5. Modificar tu perfil.\n";
+    cout << "6. SALIR\n\n";
     cout << "Elija una opcion:  ";
     return recogerEntero();
 }
@@ -189,6 +202,8 @@ void Cliente::pantallaChatIniciados() {
         socketCliente.enviarMensaje(mensajeInstruccion.c_str());
         return;
     } else {
+        mensajeInstruccion = "CHAT_CONVERSATION";
+        socketCliente.enviarMensaje(mensajeInstruccion.c_str());
         pantallaChatConversacion(opcion);
     }
 }
@@ -208,9 +223,10 @@ void Cliente::pantallaChatConversacion(int idConversacion) {
         mensajeInstruccion = "GET_MESSAGES";
         socketCliente.enviarMensaje(mensajeInstruccion.c_str());
         socketCliente.enviarMensaje(idBuffer);
-        socketCliente.recibirMensaje(buffer);
-        cout << buffer;
 
+        // Recibimos e impriminos la conversacion
+        socketCliente.recibirMensaje(buffer);
+        cout << buffer << endl;
         cout << "================================\n";
         cout << "Escriba un mensaje o 'salir' para volver al menu: ";
         char mensaje[MAX_BUFFER_SIZE];
@@ -233,14 +249,12 @@ void Cliente::pantallaChatConversacion(int idConversacion) {
 
 
 void Cliente::pantallaTusProfesores() {
-    socketCliente.enviarMensaje("GET_PROFESORES");
     char buffer[MAX_BUFFER_SIZE];
     socketCliente.recibirMensaje(buffer);
 
     system("cls");
     cout << "================================\n";
     cout << "    Estos son tus profesores    \n";
-    cout << "    (Todavia por programar)     \n";
     cout << "================================\n";
     cout << buffer;
     cout << "================================\n";
@@ -374,7 +388,7 @@ void Cliente::ingresarContrasenya(char* contrasenya) {
     cin >> contrasenya;
 }
 
-char Cliente::pantallaPerfilProfesor(char *correo, char* nombre, char *dni) {
+char Cliente::pantallaPerfil(char *correo, char* nombre, char *dni) {
     system("cls");
     printf("================================\n");
     printf("             -Perfil-           \n");

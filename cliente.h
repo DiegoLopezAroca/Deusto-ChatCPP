@@ -30,6 +30,6 @@ public:
     void ingresarCorreo(char* correo);
     void ingresarContrasenya(char* contrasenya);
     void pantallaCrearNuevoGrupo();
-    char pantallaPerfilProfesor(char *correo, char* nombre, char *dni);
+    char pantallaPerfil(char *correo, char* nombre, char *dni);
     void pantallaChatConversacion(int idConversacion);
 };
