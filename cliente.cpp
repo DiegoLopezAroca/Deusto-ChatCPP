@@ -181,38 +181,56 @@ int Cliente::recogerEntero() {
 }
 
 
-
-
-
-
 void Cliente::pantallaChatIniciados() {
     char buffer[MAX_BUFFER_SIZE * 10]; // Buffer grande para todas las conversaciones
     socketCliente.recibirMensaje(buffer);
-    system("cls");
-    cout << "================================\n";
-    cout << "      Conversaciones iniciadas  \n";
-    cout << "================================\n";
-    cout << buffer;
-    cout << "================================\n";
-    cout << "Seleccione una conversacion o pulse 0 para volver al menu: ";
-    int opcion;
-    cin >> opcion;
-    if (opcion == 0) {
-        mensajeInstruccion = "RETURN_MENU";
-        socketCliente.enviarMensaje(mensajeInstruccion.c_str());
-        return;
-    } else {
-        mensajeInstruccion = "CHAT_CONVERSATION";
-        socketCliente.enviarMensaje(mensajeInstruccion.c_str());
-        pantallaChatConversacion(opcion);
+    bool verdad = true;
+
+    while(verdad) {
+        system("cls");
+        cout << "================================\n";
+        cout << "      Conversaciones iniciadas  \n";
+        cout << "================================\n";
+        cout << buffer;
+        cout << "================================\n";
+        cout << "Seleccione una conversacion o pulse una letra para volver al menu: ";
+        int opcion;
+        cin >> opcion;
+        if (opcion == 0) {
+            mensajeInstruccion = "RETURN_MENU";
+            socketCliente.enviarMensaje(mensajeInstruccion.c_str());
+            verdad = false;
+        } else {
+            // Enviar el ID de la conversación para verificación
+            char idBuffer[32];
+            sprintf(idBuffer, "%d", opcion);
+            mensajeInstruccion = "VERIFY_CONVERSATION";
+            socketCliente.enviarMensaje(mensajeInstruccion.c_str());
+            socketCliente.enviarMensaje(idBuffer);
+
+            // Recibir la respuesta del servidor
+            char verifyResponse[MAX_BUFFER_SIZE];
+            socketCliente.recibirMensaje(verifyResponse);
+            
+            if (strcmp(verifyResponse, "CONVERSATION_EXISTS") == 0) {
+                mensajeInstruccion = "CHAT_CONVERSATION";
+                socketCliente.enviarMensaje(mensajeInstruccion.c_str());
+                pantallaChatConversacion(opcion);
+            } else {
+                socketCliente.enviarMensaje("NO_CONVERSATION");
+                cout << "La conversacion seleccionada no existe.\n\n";
+            }
+        }
     }
 }
+
 
 void Cliente::pantallaChatConversacion(int idConversacion) {
     char buffer[MAX_BUFFER_SIZE * 10];  // Buffer grande para todos los mensajes
     char idBuffer[32]; // Buffer suficiente para convertir un int a string
     sprintf(idBuffer, "%d", idConversacion);
-    
+    socketCliente.enviarMensaje(idBuffer);
+
     while (true) {
         system("cls");
         cout << "================================\n";
@@ -222,16 +240,17 @@ void Cliente::pantallaChatConversacion(int idConversacion) {
         // Solicitar y mostrar mensajes de la conversación
         mensajeInstruccion = "GET_MESSAGES";
         socketCliente.enviarMensaje(mensajeInstruccion.c_str());
-        socketCliente.enviarMensaje(idBuffer);
 
-        // Recibimos e impriminos la conversacion
+        // Recibimos e imprimimos la conversacion
         socketCliente.recibirMensaje(buffer);
-        cout << buffer << endl;
+        cout << buffer;
         cout << "================================\n";
-        cout << "Escriba un mensaje o 'salir' para volver al menu: ";
+        cout << "Escriba un mensaje o 'salir' para volver a las conversaciones: ";
         char mensaje[MAX_BUFFER_SIZE];
-        cin.ignore();  // Limpiar el buffer de entrada
-        cin.getline(mensaje, MAX_BUFFER_SIZE);
+
+        // Leemos el mensaje y eliminamos tambien el salto de linea
+        fgets(mensaje, MAX_BUFFER_SIZE, stdin);
+        strtok(mensaje, "\n");
 
         if (strcmp(mensaje, "salir") == 0) {
             mensajeInstruccion = "RETURN_MENU";
@@ -240,8 +259,7 @@ void Cliente::pantallaChatConversacion(int idConversacion) {
         } else {
             mensajeInstruccion = "SEND_MESSAGE";
             socketCliente.enviarMensaje(mensajeInstruccion.c_str());
-            socketCliente.enviarDatos((char*)&idConversacion, sizeof(int));
-            socketCliente.enviarMensaje(mensaje);
+            socketCliente.enviarDatos(mensaje, sizeof(mensaje));
         }
     }
 }
