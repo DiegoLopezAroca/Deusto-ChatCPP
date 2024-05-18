@@ -211,7 +211,7 @@ void Cliente::pantallaChatIniciados() {
             // Recibir la respuesta del servidor
             char verifyResponse[MAX_BUFFER_SIZE];
             socketCliente.recibirMensaje(verifyResponse);
-            
+
             if (strcmp(verifyResponse, "CONVERSATION_EXISTS") == 0) {
                 mensajeInstruccion = "CHAT_CONVERSATION";
                 socketCliente.enviarMensaje(mensajeInstruccion.c_str());
