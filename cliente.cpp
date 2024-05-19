@@ -230,13 +230,13 @@ void Cliente::pantallaChatConversacion(int idConversacion) {
     char idBuffer[32]; // Buffer suficiente para convertir un int a string
     sprintf(idBuffer, "%d", idConversacion);
     socketCliente.enviarMensaje(idBuffer);
-
+    
+    
     while (true) {
         system("cls");
         cout << "================================\n";
         cout << "       Conversacion " << idConversacion << "        \n";
         cout << "================================\n";
-
         // Solicitar y mostrar mensajes de la conversación
         mensajeInstruccion = "GET_MESSAGES";
         socketCliente.enviarMensaje(mensajeInstruccion.c_str());

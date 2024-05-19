@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include "socket.h"
+#include "databaseHandler.h"
 
 #define MAX_LINE 2
 
@@ -12,6 +13,8 @@ private:
     char correo[MAX_BUFFER_SIZE];
     char contrasenya[MAX_BUFFER_SIZE];
     SocketCliente socketCliente;
+    // ConversationsHandler conversationsHandler;
+    // MessagesHandler messagesHandler;
 
 public:
     Cliente();
